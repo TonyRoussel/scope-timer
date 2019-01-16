@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <fstream>
 
 class ScopeTimer {
 public:
@@ -54,6 +55,30 @@ ScopeTimer::Duration  ScopeTimer::getDurationFromStart() const {
   const std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
 
   return (duration_cast<DurationType>(now - this->start).count());
+};
+
+
+void  ScopeTimerStaticCore::addTimingToNamedScope(const ScopeTimer::ScopeSignature& scopeName, const ScopeTimer::Duration& duration) {
+  ScopesTiming& scopesTimingContainer = ScopeTimerStaticCore::getScopesTimingStaticInstance();
+
+  scopesTimingContainer[scopeName].push_back(duration);
+  return ;
+};
+
+void  ScopeTimerStaticCore::dumpTimingToFile(const std::string& path) {
+  const ScopesTiming& scopesTimingContainer = ScopeTimerStaticCore::getScopesTimingStaticInstance();
+  std::ofstream       dumpfile;
+
+  dumpfile.open(path, std::ios::out | std::ios::trunc);
+  for (ScopesTiming::const_iterator it_scopes = scopesTimingContainer.begin(); it_scopes != scopesTimingContainer.end(); ++it_scopes) {
+    const ScopeSignature& currentScope = it_scopes->first;
+    const TimingVector&   timings = it_scopes->second;
+
+    for (TimingVector::const_iterator it_timings = timings.begin(); it_timings != timings.end(); ++it_timings)
+      dumpfile << currentScope << "," << *it_timings << std::endl;
+  }
+  dumpfile.close();
+  return ;
 };
 
 #endif /* SCOPE_TIMER */

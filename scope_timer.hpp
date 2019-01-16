@@ -3,11 +3,13 @@
 #include <chrono>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 class ScopeTimer {
 public:
   using ScopeSignature = std::string;
-  using Duration = decltype(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - std::chrono::high_resolution_clock::now()).count());
+  using DurationType = std::chrono::microseconds;
+  using Duration = decltype(std::chrono::duration_cast<DurationType>(std::chrono::high_resolution_clock::now() - std::chrono::high_resolution_clock::now()).count());
 
   ScopeTimer(const ScopeSignature& scopeName);
   ~ScopeTimer();
@@ -30,9 +32,28 @@ public:
 
 private:
   using TimingVector = std::vector<ScopeTimer::Duration>;
-  using ScopesTiming = std::map<ScopeTimer::ScopeSignature, TimingVector>;
+  using ScopesTiming = std::unordered_map<ScopeTimer::ScopeSignature, TimingVector>;
 
   static ScopesTiming&  getScopesTimingStaticInstance();
+};
+
+/*******************************************************Implementations*******************************************************/
+
+ScopeTimer::ScopeTimer(const ScopeSignature& scopeName) : scopeName(scopeName), start(std::chrono::high_resolution_clock::now()) {};
+
+ScopeTimer::~ScopeTimer() {
+  const Duration  scopeTimerLifetimeDuration = this->getDurationFromStart();
+
+  ScopeTimerStaticCore::addTimingToNamedScope(this->scopeName, scopeTimerLifetimeDuration);
+  return ;
+};
+
+ScopeTimer::Duration  ScopeTimer::getDurationFromStart() const {
+  using std::chrono::duration_cast;
+
+  const std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
+
+  return (duration_cast<DurationType>(now - this->start).count());
 };
 
 #endif /* SCOPE_TIMER */

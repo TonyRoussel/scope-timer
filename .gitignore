@@ -1,0 +1,21 @@
+*.o
+*.a
+*.out
+callgrind.out.*
+
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+
+*.swp
+.tags
+*.pbf
+*.graphml
+
+# C extensions
+*.so
+
+# CLion related files
+*.cbp
+.metadata

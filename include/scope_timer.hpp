@@ -3,7 +3,7 @@
 #include <chrono>
 #include <string>
 #include <vector>
-#include <unordered_map>
+#include <map>
 #include <fstream>
 
 class ScopeTimer {
@@ -33,23 +33,28 @@ public:
 
 private:
   using TimingVector = std::vector<ScopeTimer::Duration>;
-  using ScopesTiming = std::unordered_map<ScopeTimer::ScopeSignature, TimingVector>;
+  using ScopesTiming = std::map<ScopeTimer::ScopeSignature, TimingVector>;
 
-  static ScopesTiming&  getScopesTimingStaticInstance();
+  static ScopesTiming&  getScopesTimingStaticInstance() {
+    static ScopesTiming scopesTimingContainer;
+
+    return (scopesTimingContainer);
+  };
+
 };
 
 /*******************************************************Implementations*******************************************************/
 
-ScopeTimer::ScopeTimer(const ScopeSignature& scopeName) : scopeName(scopeName), start(std::chrono::high_resolution_clock::now()) {};
+inline ScopeTimer::ScopeTimer(const ScopeSignature& scopeName) : scopeName(scopeName), start(std::chrono::high_resolution_clock::now()) {};
 
-ScopeTimer::~ScopeTimer() {
+inline ScopeTimer::~ScopeTimer() {
   const Duration  scopeTimerLifetimeDuration = this->getDurationFromStart();
 
   ScopeTimerStaticCore::addTimingToNamedScope(this->scopeName, scopeTimerLifetimeDuration);
   return ;
 };
 
-ScopeTimer::Duration  ScopeTimer::getDurationFromStart() const {
+inline ScopeTimer::Duration  ScopeTimer::getDurationFromStart() const {
   using std::chrono::duration_cast;
 
   const std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
@@ -58,14 +63,14 @@ ScopeTimer::Duration  ScopeTimer::getDurationFromStart() const {
 };
 
 
-void  ScopeTimerStaticCore::addTimingToNamedScope(const ScopeTimer::ScopeSignature& scopeName, const ScopeTimer::Duration& duration) {
+inline void  ScopeTimerStaticCore::addTimingToNamedScope(const ScopeTimer::ScopeSignature& scopeName, const ScopeTimer::Duration& duration) {
   ScopesTiming& scopesTimingContainer = ScopeTimerStaticCore::getScopesTimingStaticInstance();
 
   scopesTimingContainer[scopeName].push_back(duration);
   return ;
 };
 
-void  ScopeTimerStaticCore::dumpTimingToFile(const std::string& path) {
+inline void  ScopeTimerStaticCore::dumpTimingToFile(const std::string& path) {
   const ScopesTiming& scopesTimingContainer = ScopeTimerStaticCore::getScopesTimingStaticInstance();
   std::ofstream       dumpfile;
 
@@ -81,14 +86,14 @@ void  ScopeTimerStaticCore::dumpTimingToFile(const std::string& path) {
   return ;
 };
 
-void  ScopeTimerStaticCore::clearAllTiming() {
+inline void  ScopeTimerStaticCore::clearAllTiming() {
   ScopesTiming& scopesTimingContainer = ScopeTimerStaticCore::getScopesTimingStaticInstance();
 
   scopesTimingContainer.clear();
   return ;
 };
 
-void  ScopeTimerStaticCore::clearTimingForNamedScope(const ScopeTimer::ScopeSignature& scopeName) {
+inline void  ScopeTimerStaticCore::clearTimingForNamedScope(const ScopeTimer::ScopeSignature& scopeName) {
   ScopesTiming&           scopesTimingContainer = ScopeTimerStaticCore::getScopesTimingStaticInstance();
   ScopesTiming::iterator  it_scopes = scopesTimingContainer.find(scopeName);
 
@@ -97,10 +102,12 @@ void  ScopeTimerStaticCore::clearTimingForNamedScope(const ScopeTimer::ScopeSign
   return ;
 };
 
+/*
 ScopeTimerStaticCore::ScopesTiming& ScopeTimerStaticCore::getScopesTimingStaticInstance() {
   static ScopesTiming scopesTimingContainer;
 
   return (scopesTimingContainer);
 };
+*/
 
 #endif /* SCOPE_TIMER */

@@ -71,14 +71,36 @@ void  ScopeTimerStaticCore::dumpTimingToFile(const std::string& path) {
 
   dumpfile.open(path, std::ios::out | std::ios::trunc);
   for (ScopesTiming::const_iterator it_scopes = scopesTimingContainer.begin(); it_scopes != scopesTimingContainer.end(); ++it_scopes) {
-    const ScopeSignature& currentScope = it_scopes->first;
-    const TimingVector&   timings = it_scopes->second;
+    const ScopeTimer::ScopeSignature& currentScope = it_scopes->first;
+    const TimingVector&               timings = it_scopes->second;
 
     for (TimingVector::const_iterator it_timings = timings.begin(); it_timings != timings.end(); ++it_timings)
       dumpfile << currentScope << "," << *it_timings << std::endl;
   }
   dumpfile.close();
   return ;
+};
+
+void  ScopeTimerStaticCore::clearAllTiming() {
+  ScopesTiming& scopesTimingContainer = ScopeTimerStaticCore::getScopesTimingStaticInstance();
+
+  scopesTimingContainer.clear();
+  return ;
+};
+
+void  ScopeTimerStaticCore::clearTimingForNamedScope(const ScopeTimer::ScopeSignature& scopeName) {
+  ScopesTiming&           scopesTimingContainer = ScopeTimerStaticCore::getScopesTimingStaticInstance();
+  ScopesTiming::iterator  it_scopes = scopesTimingContainer.find(scopeName);
+
+  if (it_scopes != scopesTimingContainer.end())
+    it_scopes->second.clear();
+  return ;
+};
+
+ScopeTimerStaticCore::ScopesTiming& ScopeTimerStaticCore::getScopesTimingStaticInstance() {
+  static ScopesTiming scopesTimingContainer;
+
+  return (scopesTimingContainer);
 };
 
 #endif /* SCOPE_TIMER */

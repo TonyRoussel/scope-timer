@@ -102,12 +102,4 @@ inline void  ScopeTimerStaticCore::clearTimingForNamedScope(const ScopeTimer::Sc
   return ;
 };
 
-/*
-ScopeTimerStaticCore::ScopesTiming& ScopeTimerStaticCore::getScopesTimingStaticInstance() {
-  static ScopesTiming scopesTimingContainer;
-
-  return (scopesTimingContainer);
-};
-*/
-
 #endif /* SCOPE_TIMER */
